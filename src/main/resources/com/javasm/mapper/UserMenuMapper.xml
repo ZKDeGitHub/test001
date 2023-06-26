@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javasm.mapper.UserMenuMapper">
+    <!--
+        根据用户编号查询权限数据
+        List<UserMenu> queryUserMenuByUserId(Integer userId);
+    -->
+    <select id="queryUserMenuByUserId" resultType="userMenu">
+        select user_id,menu_id from fin_user_menu where user_id=#{userId}
+    </select>
+
+    <!--
+        根据用户编号删除用户权限数据
+        int deleteUserMenuByUserId(Integer userId);
+    -->
+    <delete id="deleteUserMenuByUserId">
+        delete from fin_user_menu where user_id=#{userId}
+    </delete>
+
+    <!--
+        根据用户编号查询菜单编号
+        List<Integer> queryMenuIdList(Integer userId);
+    -->
+    <select id="queryMenuIdList" resultType="int">
+        select menu_id from fin_user_menu where user_id=#{userId} and menu_id>1000
+    </select>
+
+    <!--
+        批量增加用户权限数据
+        int addUserMenuBatch(List<UserMenu> userMenuList);
+    -->
+    <insert id="addUserMenuBatch">
+        insert into fin_user_menu(user_id,menu_id) values
+        <foreach collection="list" item="userMenu" separator=",">
+            (#{userMenu.userId},#{userMenu.menuId})
+        </foreach>
+    </insert>
+</mapper>

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javasm.mapper.UserMapper">
+    <!--设置sql公共代码-->
+    <sql id="queryUser">
+        select user_id,user_name,user_pwd,role_id,reg_time,login_time,is_valid,head_img,version_id
+    </sql>
+
+    <resultMap id="userMap" type="user">
+        <id column="user_id" property="userId"></id>
+        <result column="user_name" property="userName"></result>
+        <result column="user_pwd" property="userPwd"></result>
+        <result column="role_id" property="roleId"></result>
+        <result column="reg_time" property="regTime"></result>
+        <result column="login_time" property="loginTime"></result>
+        <result column="is_valid" property="isValid"></result>
+        <result column="head_img" property="headImg"></result>
+        <result column="version_id" property="versionId"></result>
+    </resultMap>
+    <!--
+        根据用户名和密码查询登录用户数据
+        User queryByUserNameAndUserPwd(User user);
+    -->
+    <select id="queryByUserNameAndUserPwd" resultMap="userMap">
+        <include refid="queryUser"></include>
+        from fin_admin_user
+        where user_name=#{userName}
+        and user_pwd=#{userPwd}
+    </select>
+
+    <!--
+        查询用户数据(起始索引值、每页显示的最大条目数、用户编号、用户名称)
+        List<User> queryUser(@Param("startIndex") Integer startIndex, @Param("pageSize") Integer pageSize, @Param("user") User user);
+    -->
+    <select id="queryUser" resultMap="userMap">
+        <include refid="queryUser"></include>
+        from fin_admin_user
+        <where>
+            <if test="user.userId!=null">
+                and user_id=#{user.userId}
+            </if>
+            <if test="user.userName!=null and user.userName!=''">
+                and user_name like '%${user.userName}%'
+            </if>
+        </where>
+        limit #{startIndex},#{pageSize}
+    </select>
+
+    <!--
+        查询数据表中数据总条数(用户编号、用户名称)
+        int queryUserNum(User user);
+    -->
+    <select id="queryUserNum" resultType="int">
+        select count(1) total from fin_admin_user
+        <where>
+            <if test="userId!=null">
+                and user_id=#{userId}
+            </if>
+            <if test="userName!=null and userName!=''">
+                and user_name like '%${userName}%'
+            </if>
+        </where>
+    </select>
+
+    <!--
+        增加用户数据
+        int addUser(User user);
+    -->
+    <insert id="addUser">
+        insert into fin_admin_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userName!=null and userName!=''">
+                user_name,
+            </if>
+            <if test="userPwd!=null and userPwd!=''">
+                user_pwd,
+            </if>
+            <if test="roleId!=null">
+                role_id,
+            </if>
+            <if test="isValid!=null">
+                is_valid,
+            </if>
+            <if test="regTime!=null and regTime!=''">
+                reg_time,
+            </if>
+            <if test="headImg!=null and headImg!=''">
+                head_img,
+            </if>
+            <if test="versionId!=null">
+                version_id,
+            </if>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userName!=null and userName!=''">
+                #{userName},
+            </if>
+            <if test="userPwd!=null and userPwd!=''">
+                #{userPwd},
+            </if>
+            <if test="roleId!=null">
+                #{roleId},
+            </if>
+            <if test="isValid!=null">
+                #{isValid},
+            </if>
+            <if test="regTime!=null and regTime!=''">
+                #{regTime},
+            </if>
+            <if test="headImg!=null and headImg!=''">
+                #{headImg},
+            </if>
+            <if test="versionId!=null">
+                #{versionId},
+            </if>
+        </trim>
+    </insert>
+
+    <!--
+        根据用户编号查询用户数据
+        User queryByUserId(Integer userId);
+    -->
+    <select id="queryByUserId" resultMap="userMap">
+        <include refid="queryUser"></include>
+        from fin_admin_user
+        where user_id=#{userId}
+    </select>
+
+    <!--
+        根据用户编号和版本编号查询用户数据
+        User queryByUidAndVid(@Param("userId") Integer userId, @Param("versionId") Integer versionId);
+    -->
+    <select id="queryByUidAndVid" resultMap="userMap">
+        <include refid="queryUser"></include>
+        from fin_admin_user
+        where user_id=#{userId}
+        and version_id=#{versionId}
+    </select>
+
+    <!--
+        修改用户数据
+        int editUser(User user);
+    -->
+    <update id="editUser">
+        update fin_admin_user
+        <set>
+            <if test="userName!=null and userName!=''">
+                user_name=#{userName},
+            </if>
+            <if test="userPwd!=null and userPwd!=''">
+                user_pwd=#{userPwd},
+            </if>
+            <if test="roleId!=null">
+                role_id=#{roleId},
+            </if>
+            <if test="isValid!=null">
+                is_valid=#{isValid},
+            </if>
+            <if test="regTime!=null and regTime!=''">
+                reg_time=#{regTime},
+            </if>
+            <if test="headImg!=null and headImg!=''">
+                head_img=#{headImg},
+            </if>
+            <if test="versionId!=null">
+                version_id=#{versionId},
+            </if>
+        </set>
+        where user_id=#{userId}
+    </update>
+
+    <!--
+        删除用户数据
+        int deleteUser(Integer userId);
+    -->
+    <delete id="deleteUser">
+        delete from fin_admin_user where user_id=#{userId}
+    </delete>
+
+    <!--
+        修改用户的登录时间
+        void editLoginTime(Integer userId);
+    -->
+    <update id="editLoginTime">
+        update fin_admin_user set login_time=now() where user_id=#{userId}
+    </update>
+
+</mapper>

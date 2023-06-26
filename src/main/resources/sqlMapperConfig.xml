@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--引入jdbc.properties文件-->
+    <properties resource="jdbc.properties"></properties>
+
+    <settings>
+        <!--开启日志打印，STDOUT_LOGGING(控制台打印)-->
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+        <!--
+            mapUnderscoreToCamelCase：
+                是否开启驼峰命名自动映射;
+                即从经典数据库列名 A_COLUMN 映射到经典 Java 属性名 aColumn
+                取值：true | false
+                默认：False
+        -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+
+    <typeAliases>
+        <!--MyBatis搜索当前配置的包下面所有的实体类，类名小写作为别名，不区分大小写-->
+        <package name="com.javasm.entity"/>
+    </typeAliases>
+
+    <environments default="development">
+        <!--id：唯一表示-->
+        <environment id="development">
+            <!--事务交给JDBC管理-->
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <!--mapper接口所在的包名-->
+        <package name="com.javasm.mapper"/>
+    </mappers>
+</configuration>
+
+
+
+
+
+
+
+
+
+
+

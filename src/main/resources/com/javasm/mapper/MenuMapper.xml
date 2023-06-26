@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javasm.mapper.MenuMapper">
+    <sql id="queryMenu">
+        select menu_id,menu_name,parent_id,menu_url,glyphicon,version_id
+    </sql>
+
+    <resultMap id="menuMap" type="menu">
+        <id column="menu_id" property="menuId"></id>
+        <result column="menu_name" property="menuName"></result>
+        <result column="parent_id" property="parentId"></result>
+        <result column="menu_url" property="menuUrl"></result>
+        <result column="glyphicon" property="glyphicon"></result>
+        <result column="version_id" property="versionId"></result>
+    </resultMap>
+    <!--
+        根据用户编号和权限等级查询登录用户的菜单数据
+        List<Menu> queryLoginMenuList(@Param("userId") Integer userId,@Param("level") Integer level);
+    -->
+    <select id="queryLoginMenuList" resultType="menu">
+        select am.menu_id,am.menu_name,am.parent_id,am.menu_url,am.glyphicon,am.version_id
+        from fin_admin_menu am,fin_user_menu um
+        where am.menu_id=um.menu_id
+        and um.user_id=#{userId}
+        <if test="level==1">
+            and am.parent_id=0
+        </if>
+        <if test="level==2">
+            and am.parent_id!=0
+        </if>
+    </select>
+
+    <!--
+       查询所有的菜单数据
+       List<Menu> queryAllMenuList(@Param("menu") Menu menu,@Param("startIndex") Integer startIndex,@Param("pageSize") Integer pageSize);
+    -->
+    <select id="queryAllMenuList" resultType="menu">
+        select am.menu_id,am.menu_name,am.parent_id,ifnull(am2.menu_name,'超级管理')
+        parent_name,am.menu_url,am.glyphicon,am.version_id
+        from
+        fin_admin_menu am
+        left join
+        fin_admin_menu am2
+        on
+        am.parent_id=am2.menu_id
+        <where>
+            <if test="menu.menuName!=null and menu.menuName!=''">
+                and am.menu_name like '%${menu.menuName}%'
+            </if>
+            <if test="menu.parentId!=null">
+                and am.parent_id=#{menu.parentId}
+            </if>
+        </where>
+        limit #{startIndex},#{pageSize}
+    </select>
+
+    <!--
+        查询数据总条数
+        Integer queryTotalNum(Menu menu);
+    -->
+    <select id="queryTotalNum" resultType="int">
+        select count(1) total from fin_admin_menu am
+        <where>
+            <if test="menuName!=null and menuName!=''">
+                and am.menu_name like '%${menuName}%'
+            </if>
+            <if test="parentId!=null">
+                and am.parent_id=#{parentId}
+            </if>
+        </where>
+    </select>
+    <!--
+        查询所有的一级菜单数据
+        List<Menu> queryOneMenuList();
+    -->
+    <select id="queryOneMenuList" resultMap="menuMap">
+        <include refid="queryMenu"></include>
+        from fin_admin_menu
+        where parent_id=0
+    </select>
+
+    <!--
+        根据菜单编号查询菜单数据
+        Menu queryMenuByMenuId(Integer menuId);
+    -->
+    <select id="queryMenuByMenuId" resultMap="menuMap">
+        <include refid="queryMenu"></include>
+        from fin_admin_menu
+        where menu_id=#{menuId}
+    </select>
+
+    <!--
+        增加菜单数据
+        int addMenu(Menu menu);
+    -->
+    <insert id="addMenu">
+        insert into fin_admin_menu
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="menuId!=null">
+                menu_id,
+            </if>
+            <if test="menuName!=null and menuName!=''">
+                menu_name,
+            </if>
+            <if test="parentId!=null">
+                parent_id,
+            </if>
+            <if test="menuUrl!=null and menuUrl!=''">
+                menu_url,
+            </if>
+            <if test="glyphicon!=null and glyphicon!=''">
+                glyphicon,
+            </if>
+            <if test="versionId!=null">
+                version_id,
+            </if>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="menuId!=null">
+                #{menuId},
+            </if>
+            <if test="menuName!=null and menuName!=''">
+                #{menuName},
+            </if>
+            <if test="parentId!=null">
+                #{parentId},
+            </if>
+            <if test="menuUrl!=null and menuUrl!=''">
+                #{menuUrl},
+            </if>
+            <if test="glyphicon!=null and glyphicon!=''">
+                #{glyphicon},
+            </if>
+            <if test="versionId!=null">
+                #{versionId},
+            </if>
+        </trim>
+    </insert>
+
+    <!--
+        修改菜单数据
+        int editMenu(Menu menu);
+    -->
+    <update id="editMenu">
+        update fin_admin_menu
+        <set>
+            <if test="menuName!=null and menuName!=''">
+                menu_name=#{menuName},
+            </if>
+            <if test="parentId!=null">
+                parent_id=#{parentId},
+            </if>
+            <if test="menuUrl!=null and menuUrl!=''">
+                menu_url=#{menuUrl},
+            </if>
+            <if test="glyphicon!=null and glyphicon!=''">
+                glyphicon=#{glyphicon},
+            </if>
+            <if test="versionId!=null">
+                version_id=#{versionId},
+            </if>
+        </set>
+        where menu_id=#{menuId}
+    </update>
+
+    <!--
+        根据菜单编号和版本编号查询菜单数据
+        Menu queryByMidAndVid(@Param("menuId") Integer menuId,@Param("versionId") Integer versionId);
+    -->
+    <select id="queryByMidAndVid" resultMap="menuMap">
+        <include refid="queryMenu"></include>
+        from fin_admin_menu
+        where menu_id=#{menuId}
+        and version_id=#{versionId}
+    </select>
+
+    <!--
+        删除菜单数据(根据菜单编号)
+        int deleteMenuByMenuId(Integer menuId);
+    -->
+    <delete id="deleteMenuByMenuId">
+        delete
+        from fin_admin_menu
+        where menu_id=#{menuId}
+    </delete>
+
+    <!--
+        根据上级菜单编号查询菜单数据
+        List<Menu> queryMenuByParentId(Integer parentId);
+    -->
+    <select id="queryMenuByParentId" resultMap="menuMap">
+        <include refid="queryMenu"></include>
+        from fin_admin_menu
+        where parent_id=#{parentId}
+    </select>
+
+    <!--
+        删除菜单数据(根据上级菜单编号)
+        int deleteMenuByParentId(Integer parentId);
+    -->
+    <delete id="deleteMenuByParentId">
+        delete
+        from fin_admin_menu
+        where parent_id=#{parentId}
+    </delete>
+
+    <!--
+        查询登录用户的二级权限菜单访问地址
+        List<String> queryLoginMenuUrl(Integer userId);
+    -->
+    <select id="queryLoginMenuUrl" resultType="string">
+        select menu_url
+        from fin_admin_menu am,fin_user_menu um
+        where parent_id!=0
+        and am.menu_id=um.menu_id
+        and um.user_id=#{userId}
+    </select>
+
+    <!--
+        查询所有的权限数据(按照等级)
+        List<Menu> queryAllMenuByLevel(Integer level);
+    -->
+    <select id="queryAllMenuByLevel" resultMap="menuMap">
+        <include refid="queryMenu"></include>
+        from fin_admin_menu
+        <where>
+            <if test="level==1">
+                and parent_id=0
+            </if>
+            <if test="level==2">
+                and parent_id!=0
+            </if>
+        </where>
+    </select>
+
+</mapper>
